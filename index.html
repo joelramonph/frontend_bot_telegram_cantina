@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Cantina Escolar - Telegram Mini App</title>
+  
+  <!-- SDK Oficial de Telegram Web Apps -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    /* ==========================================
+       VARIABLES Y ESTILOS BASE (Telegram Theme)
+       ========================================== */
+    :root {
+      /* Fallbacks para desarrollo en navegador fuera de Telegram */
+      --bg-color: var(--tg-theme-bg-color, #f4f4f7);
+      --text-color: var(--tg-theme-text-color, #1c1c1e);
+      --hint-color: var(--tg-theme-hint-color, #8e8e93);
+      --link-color: var(--tg-theme-link-color, #007aff);
+      --button-color: var(--tg-theme-button-color, #007aff);
+      --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+      --secondary-bg-color: var(--tg-theme-secondary-bg-color, #ffffff);
+      
+      --card-radius: 14px;
+      --transition-speed: 0.2s ease;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding-bottom: 90px; /* Espacio para scroll y footer */
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      background-color: var(--secondary-bg-color);
+      padding: 16px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      font-size: 28px;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-color);
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--hint-color);
+    }
+
+    /* Categorías */
+    .categories {
+      display: flex;
+      gap: 8px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .categories::-webkit-scrollbar {
+      display: none;
+    }
+
+    .category-chip {
+      background-color: var(--secondary-bg-color);
+      color: var(--text-color);
+      border: 1px solid rgba(0,0,0,0.06);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--transition-speed);
+    }
+
+    .category-chip.active {
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+      border-color: var(--button-color);
+    }
+
+    /* Lista de Productos */
+    .container {
+      padding: 0 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 16px 0 12px 4px;
+      color: var(--text-color);
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .product-card {
+      background-color: var(--secondary-bg-color);
+      border-radius: var(--card-radius);
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    }
+
+    .product-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .product-emoji {
+      font-size: 32px;
+      width: 48px;
+      height: 48px;
+      background: var(--bg-color);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .product-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .product-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .product-description {
+      font-size: 12px;
+      color: var(--hint-color);
+    }
+
+    .product-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--link-color);
+    }
+
+    /* Controles de Cantidad (+ / -) */
+    .stepper {
+      display: flex;
+      align-items: center;
+      background-color: var(--bg-color);
+      border-radius: 10px;
+      padding: 4px;
+      gap: 8px;
+    }
+
+    .stepper-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background-color: var(--secondary-bg-color);
+      color: var(--button-color);
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      transition: active var(--transition-speed);
+    }
+
+    .stepper-btn:active {
+      transform: scale(0.92);
+      opacity: 0.8;
+    }
+
+    .stepper-btn.add-btn {
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+    }
+
+    .count-label {
+      font-size: 14px;
+      font-weight: 700;
+      min-width: 20px;
+      text-align: center;
+      color: var(--text-color);
+    }
+
+    /* Comentarios / Notas opcionales */
+    .notes-section {
+      margin-top: 20px;
+      background-color: var(--secondary-bg-color);
+      border-radius: var(--card-radius);
+      padding: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .notes-label {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+      color: var(--text-color);
+    }
+
+    .notes-input {
+      width: 100%;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      outline: none;
+      resize: none;
+      box-sizing: border-box;
+    }
+
+    .notes-input::placeholder {
+      color: var(--hint-color);
+    }
+
+    /* Fallback Button (sólo visible si NO estamos dentro de Telegram) */
+    .fallback-footer {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px;
+      background-color: var(--secondary-bg-color);
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 200;
+    }
+
+    .fallback-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Encabezado de la Cantina -->
+  <header>
+    <div class="brand">
+      <span class="brand-icon">🥪</span>
+      <div>
+        <div class="brand-title" id="user-greeting">Cantina Escolar</div>
+        <div class="brand-subtitle">Haz tu pedido para el receso</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filtro por Categorías -->
+  <div class="categories" id="categories-list">
+    <button class="category-chip active" onclick="filterCategory('all', this)">Todos</button>
+    <button class="category-chip" onclick="filterCategory('comidas', this)">Comidas</button>
+    <button class="category-chip" onclick="filterCategory('bebidas', this)">Bebidas</button>
+    <button class="category-chip" onclick="filterCategory('snacks', this)">Snacks</button>
+  </div>
+
+  <main class="container">
+    <div class="section-title">Menú Disponible</div>
+    <div class="products-grid" id="products-container">
+      <!-- Los productos se renderizan dinámicamente -->
+    </div>
+
+    <!-- Notas Adicionales -->
+    <div class="notes-section">
+      <label class="notes-label" for="order-notes">Observaciones / Especificaciones:</label>
+      <textarea id="order-notes" class="notes-input" rows="2" placeholder="Ej. Empanada sin salsa, entregar a Juan Pérez de 4to A..."></textarea>
+    </div>
+  </main>
+
+  <!-- Botón de contingencia si no se ejecuta dentro del cliente Telegram -->
+  <div class="fallback-footer" id="fallback-footer">
+    <button class="fallback-btn" id="fallback-btn" onclick="executeCheckout()">Confirmar Pedido</button>
+  </div>
+
+  <script>
+    /* ==========================================
+       1. CONFIGURACIÓN Y ESTADO DE LA APLICACIÓN
+       ========================================== */
+
+    // Catálogo de productos de prueba para la cantina
+    const PRODUCTS = [
+      { id: 'emp_carne', name: 'Empanada de Carne', category: 'comidas', price: 1.50, emoji: '🥟', desc: 'Carne mechada crujiente' },
+      { id: 'emp_queso', name: 'Empanada de Queso', category: 'comidas', price: 1.25, emoji: '🧀', desc: 'Queso blanco derretido' },
+      { id: 'arepa_pabellon', name: 'Arepa Pabellón', category: 'comidas', price: 2.50, emoji: '🫓', desc: 'Carne, caraotas, tajada y queso' },
+      { id: 'tequenios', name: 'Ración de Tequeños (4ud)', category: 'snacks', price: 2.00, emoji: '🥖', desc: 'Acompañados de salsa tártara' },
+      { id: 'jugo_durazno', name: 'Jugo Natural de Durazno', category: 'bebidas', price: 1.00, emoji: '🧃', desc: 'Botella de 350ml' },
+      { id: 'refresco', name: 'Refresco en Lata', category: 'bebidas', price: 1.25, emoji: '🥤', desc: 'Sabores surtidos 355ml' },
+      { id: 'agua', name: 'Agua Mineral', category: 'bebidas', price: 0.75, emoji: '💧', desc: 'Botella 500ml' },
+      { id: 'galleta', name: 'Galleta de Chocolate', category: 'snacks', price: 0.80, emoji: '🍪', desc: 'Chocolatosa recienc horneada' }
+    ];
+
+    // Estado local del carrito: { [productId]: cantidad }
+    const cart = {};
+
+    // Moneda de despliegue
+    const CURRENCY_SYMBOL = '$';
+
+    /* ==========================================
+       2. INICIALIZACIÓN DE TELEGRAM WEB APP
+       ========================================== */
+    
+    // Objeto global del WebApp
+    const tg = window.Telegram ? window.Telegram.WebApp : null;
+
+    function initTelegramApp() {
+      if (tg) {
+        // Notificar a Telegram que el Mini App está listo para mostrarse
+        tg.ready();
+        
+        // Expande la ventana para ocupar la pantalla completa
+        tg.expand();
+
+        // Aplicar configuraciones iniciales del MainButton
+        tg.MainButton.setParams({
+          text: 'CONFIRMAR PEDIDO',
+          color: tg.themeParams.button_color || '#007aff',
+          text_color: tg.themeParams.button_text_color || '#ffffff',
+          is_active: true,
+          is_visible: false
+        });
+
+        // Registrar el listener del MainButton
+        tg.MainButton.onClick(executeCheckout);
+
+        // Saludar al usuario si tenemos sus datos
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+          const user = tg.initDataUnsafe.user;
+          const greetingElem = document.getElementById('user-greeting');
+          if (greetingElem) {
+            greetingElem.textContent = `¡Hola, ${user.first_name}! 👋`;
+          }
+        }
+      } else {
+        console.warn('Telegram WebApp SDK no detectado. Modo navegador activo.');
+      }
+    }
+
+    /* ==========================================
+       3. RENDERIZADO Y LÓGICA DE INTERFAZ (UI)
+       ========================================== */
+
+    // Renderiza la lista de productos filtrados
+    function renderProducts(categoryFilter = 'all') {
+      const container = document.getElementById('products-container');
+      container.innerHTML = '';
+
+      const filteredProducts = categoryFilter === 'all' 
+        ? PRODUCTS 
+        : PRODUCTS.filter(p => p.category === categoryFilter);
+
+      filteredProducts.forEach(product => {
+        const qty = cart[product.id] || 0;
+
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.id = `product-card-${product.id}`;
+
+        card.innerHTML = `
+          <div class="product-info">
+            <div class="product-emoji">${product.emoji}</div>
+            <div class="product-details">
+              <span class="product-name">${product.name}</span>
+              <span class="product-description">${product.desc}</span>
+              <span class="product-price">${CURRENCY_SYMBOL}${product.price.toFixed(2)}</span>
+            </div>
+          </div>
+          <div class="stepper">
+            ${qty > 0 ? `
+              <button class="stepper-btn" onclick="updateQuantity('${product.id}', -1)">-</button>
+              <span class="count-label">${qty}</span>
+            ` : ''}
+            <button class="stepper-btn add-btn" onclick="updateQuantity('${product.id}', 1)">+</button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // Filtrado por categoría
+    function filterCategory(category, buttonElem) {
+      // Haptic feedback al presionar categoría
+      triggerHaptic('impact', 'light');
+
+      document.querySelectorAll('.category-chip').forEach(chip => {
+        chip.classList.remove('active');
+      });
+      buttonElem.classList.add('active');
+
+      renderProducts(category);
+    }
+
+    /* ==========================================
+       4. LÓGICA DEL CARRITO DE COMPRAS
+       ========================================== */
+
+    // Modifica la cantidad de un ítem en el carrito
+    function updateQuantity(productId, delta) {
+      triggerHaptic('impact', 'light');
+
+      const currentQty = cart[productId] || 0;
+      const newQty = currentQty + delta;
+
+      if (newQty > 0) {
+        cart[productId] = newQty;
+      } else {
+        delete cart[productId];
+      }
+
+      // Re-renderizar la UI y actualizar estado del botón principal
+      const activeCategory = document.querySelector('.category-chip.active').textContent.toLowerCase();
+      const currentFilter = activeCategory === 'todos' ? 'all' : activeCategory;
+      renderProducts(currentFilter);
+
+      syncMainButtonState();
+    }
+
+    // Calcula el total del carrito y cantidad de ítems
+    function calculateCartTotals() {
+      let totalAmount = 0;
+      let totalItems = 0;
+
+      for (const [id, qty] of Object.entries(cart)) {
+        const product = PRODUCTS.find(p => p.id === id);
+        if (product) {
+          totalAmount += product.price * qty;
+          totalItems += qty;
+        }
+      }
+
+      return { totalAmount, totalItems };
+    }
+
+    // Sincroniza el MainButton de Telegram con el estado actual del carrito
+    function syncMainButtonState() {
+      const { totalAmount, totalItems } = calculateCartTotals();
+
+      if (totalItems > 0) {
+        const buttonText = `CONFIRMAR PEDIDO (${totalItems}) • ${CURRENCY_SYMBOL}${totalAmount.toFixed(2)}`;
+
+        if (tg) {
+          tg.MainButton.setText(buttonText);
+          if (!tg.MainButton.isVisible) {
+            tg.MainButton.show();
+          }
+        } else {
+          // Fallback para navegador web sin Telegram
+          const fallbackFooter = document.getElementById('fallback-footer');
+          const fallbackBtn = document.getElementById('fallback-btn');
+          if (fallbackFooter && fallbackBtn) {
+            fallbackFooter.style.display = 'block';
+            fallbackBtn.textContent = buttonText;
+          }
+        }
+      } else {
+        if (tg) {
+          tg.MainButton.hide();
+        } else {
+          const fallbackFooter = document.getElementById('fallback-footer');
+          if (fallbackFooter) {
+            fallbackFooter.style.display = 'none';
+          }
+        }
+      }
+    }
+
+    /* ==========================================
+       5. FINALIZACIÓN Y ENVÍO DEL PEDIDO (JSON)
+       ========================================== */
+
+    function executeCheckout() {
+      const { totalAmount, totalItems } = calculateCartTotals();
+
+      if (totalItems === 0) return;
+
+      triggerHaptic('notification', 'success');
+
+      // Obtener observaciones del input
+      const notesElem = document.getElementById('order-notes');
+      const orderNotes = notesElem ? notesElem.value.trim() : '';
+
+      // Construcción del vector de items seleccionados
+      const orderItems = Object.entries(cart).map(([id, quantity]) => {
+        const product = PRODUCTS.find(p => p.id === id);
+        return {
+          id: product.id,
+          name: product.name,
+          unitPrice: product.price,
+          quantity: quantity,
+          subtotal: Number((product.price * quantity).toFixed(2))
+        };
+      });
+
+      // Estructura JSON del pedido para enviar al backend en Python
+      const payload = {
+        type: 'CANTINA_ORDER',
+        timestamp: new Date().toISOString(),
+        order: {
+          items: orderItems,
+          totalAmount: Number(totalAmount.toFixed(2)),
+          currency: 'USD',
+          totalItems: totalItems,
+          notes: orderNotes
+        }
+      };
+
+      console.log('Payload a enviar:', payload);
+
+      if (tg) {
+        // Enviar la cadena JSON estructurada al Bot de Telegram
+        tg.sendData(JSON.stringify(payload));
+        
+        // Cerrar la Mini App
+        tg.close();
+      } else {
+        alert("¡Pedido realizado con éxito!\n\nPayload JSON que se enviaría a Telegram:\n" + JSON.stringify(payload, null, 2));
+      }
+    }
+
+    /* ==========================================
+       6. UTILIDADES
+       ========================================== */
+
+    // Retroalimentación Háptica para Telegram en dispositivos móviles
+    function triggerHaptic(type, style) {
+      if (tg && tg.HapticFeedback) {
+        if (type === 'impact') {
+          tg.HapticFeedback.impactOccurred(style || 'light');
+        } else if (type === 'notification') {
+          tg.HapticFeedback.notificationOccurred(style || 'success');
+        }
+      }
+    }
+
+    /* ==========================================
+       7. INICIALIZACIÓN
+       ========================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initTelegramApp();
+      renderProducts('all');
+    });
+  </script>
+</body>
+</html>
