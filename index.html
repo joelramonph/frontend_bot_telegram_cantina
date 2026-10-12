@@ -419,10 +419,8 @@
             </div>
           </div>
           <div class="stepper">
-            ${qty > 0 ? `
-              <button class="stepper-btn" onclick="updateQuantity('${product.id}', -1)">-</button>
-              <span class="count-label">${qty}</span>
-            ` : ''}
+            <button class="stepper-btn" id="minus-${product.id}" onclick="updateQuantity('${product.id}', -1)" style="display: ${qty > 0 ? 'flex' : 'none'};">-</button>
+            <span class="count-label" id="cant-${product.id}" style="display: ${qty > 0 ? 'inline-block' : 'none'};">${qty}</span>
             <button class="stepper-btn add-btn" onclick="updateQuantity('${product.id}', 1)">+</button>
           </div>
         `;
@@ -452,7 +450,6 @@
     function updateQuantity(productId, delta) {
       triggerHaptic('impact', 'light');
 
-      // 1. Sincronía de estado: Actualizar y guardar el objeto cart estrictamente ANTES de invocar el cálculo de totales
       const currentQty = cart[productId] || 0;
       const newQty = currentQty + delta;
 
@@ -462,13 +459,17 @@
         delete cart[productId];
       }
 
-      // Re-renderizar la UI de productos
-      const activeChip = document.querySelector('.category-chip.active');
-      const activeCategory = activeChip ? activeChip.textContent.toLowerCase() : 'todos';
-      const currentFilter = activeCategory === 'todos' ? 'all' : activeCategory;
-      renderProducts(currentFilter);
+      const cantElem = document.getElementById('cant-' + productId);
+      const minusBtn = document.getElementById('minus-' + productId);
 
-      // Actualizar el botón principal con el estado del carrito ya guardado
+      if (cantElem) {
+        cantElem.innerText = newQty;
+        cantElem.style.display = newQty > 0 ? 'inline-block' : 'none';
+      }
+      if (minusBtn) {
+        minusBtn.style.display = newQty > 0 ? 'flex' : 'none';
+      }
+
       syncMainButtonState();
     }
 
@@ -493,9 +494,10 @@
       const { totalAmount, totalItems } = calculateCartTotals();
 
       if (totalItems > 0) {
+        const buttonText = "CONFIRMAR PEDIDO ($" + totalAmount.toFixed(2) + ")";
+
         if (tg) {
-          // 2. Renderizado nativo: Actualizar usando el método reactivo oficial de Telegram
-          tg.MainButton.setText("CONFIRMAR PEDIDO ($" + totalAmount.toFixed(2) + ")");
+          tg.MainButton.setParams({ text: buttonText });
           if (!tg.MainButton.isVisible) {
             tg.MainButton.show();
           }
@@ -505,7 +507,7 @@
           const fallbackBtn = document.getElementById('fallback-btn');
           if (fallbackFooter && fallbackBtn) {
             fallbackFooter.style.display = 'block';
-            fallbackBtn.textContent = "CONFIRMAR PEDIDO ($" + totalAmount.toFixed(2) + ")";
+            fallbackBtn.textContent = buttonText;
           }
         }
       } else {
