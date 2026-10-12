@@ -450,6 +450,7 @@
     function updateQuantity(productId, delta) {
       triggerHaptic('impact', 'light');
 
+      // 1. Sincronía matemática estricta
       const currentQty = cart[productId] || 0;
       const newQty = currentQty + delta;
 
@@ -459,6 +460,7 @@
         delete cart[productId];
       }
 
+      // 2. Actualización de nodos DOM específicos por ID
       const cantElem = document.getElementById('cant-' + productId);
       const minusBtn = document.getElementById('minus-' + productId);
 
@@ -470,6 +472,7 @@
         minusBtn.style.display = newQty > 0 ? 'flex' : 'none';
       }
 
+      // 3. Sincronización del botón principal
       syncMainButtonState();
     }
 
@@ -497,10 +500,7 @@
         const buttonText = "CONFIRMAR PEDIDO ($" + totalAmount.toFixed(2) + ")";
 
         if (tg) {
-          tg.MainButton.setParams({ text: buttonText });
-          if (!tg.MainButton.isVisible) {
-            tg.MainButton.show();
-          }
+          tg.MainButton.setParams({ text: buttonText, is_visible: true });
         } else {
           // Fallback para navegador web sin Telegram
           const fallbackFooter = document.getElementById('fallback-footer');
