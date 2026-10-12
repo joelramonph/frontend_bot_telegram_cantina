@@ -452,6 +452,7 @@
     function updateQuantity(productId, delta) {
       triggerHaptic('impact', 'light');
 
+      // 1. Sincronía de estado: Actualizar y guardar el objeto cart estrictamente ANTES de invocar el cálculo de totales
       const currentQty = cart[productId] || 0;
       const newQty = currentQty + delta;
 
@@ -461,11 +462,13 @@
         delete cart[productId];
       }
 
-      // Re-renderizar la UI y actualizar estado del botón principal
-      const activeCategory = document.querySelector('.category-chip.active').textContent.toLowerCase();
+      // Re-renderizar la UI de productos
+      const activeChip = document.querySelector('.category-chip.active');
+      const activeCategory = activeChip ? activeChip.textContent.toLowerCase() : 'todos';
       const currentFilter = activeCategory === 'todos' ? 'all' : activeCategory;
       renderProducts(currentFilter);
 
+      // Actualizar el botón principal con el estado del carrito ya guardado
       syncMainButtonState();
     }
 
@@ -490,10 +493,9 @@
       const { totalAmount, totalItems } = calculateCartTotals();
 
       if (totalItems > 0) {
-        const buttonText = `CONFIRMAR PEDIDO (${totalItems}) • ${CURRENCY_SYMBOL}${totalAmount.toFixed(2)}`;
-
         if (tg) {
-          tg.MainButton.setText(buttonText);
+          // 2. Renderizado nativo: Actualizar usando el método reactivo oficial de Telegram
+          tg.MainButton.setText("CONFIRMAR PEDIDO ($" + totalAmount.toFixed(2) + ")");
           if (!tg.MainButton.isVisible) {
             tg.MainButton.show();
           }
@@ -503,7 +505,7 @@
           const fallbackBtn = document.getElementById('fallback-btn');
           if (fallbackFooter && fallbackBtn) {
             fallbackFooter.style.display = 'block';
-            fallbackBtn.textContent = buttonText;
+            fallbackBtn.textContent = "CONFIRMAR PEDIDO ($" + totalAmount.toFixed(2) + ")";
           }
         }
       } else {
