@@ -499,7 +499,8 @@
       if (totalItems > 0) {
         const buttonText = "CONFIRMAR PEDIDO ($" + totalAmount.toFixed(2) + ")";
 
-        if (tg) {
+        // Verificamos que sea Telegram y NO un navegador común
+        if (tg && tg.platform !== 'unknown') {
           tg.MainButton.setParams({ text: buttonText, is_visible: true });
         } else {
           // Fallback para navegador web sin Telegram
@@ -511,7 +512,7 @@
           }
         }
       } else {
-        if (tg) {
+        if (tg && tg.platform !== 'unknown') {
           tg.MainButton.hide();
         } else {
           const fallbackFooter = document.getElementById('fallback-footer');
@@ -521,7 +522,6 @@
         }
       }
     }
-
     /* ==========================================
        5. FINALIZACIÓN Y ENVÍO DEL PEDIDO (JSON)
        ========================================== */
