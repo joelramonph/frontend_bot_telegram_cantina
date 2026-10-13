@@ -497,16 +497,16 @@
       const { totalAmount, totalItems } = calculateCartTotals();
 
       if (totalItems > 0) {
-        const buttonText = "CONFIRMAR PEDIDO ($" + totalAmount.toFixed(2) + ")";
+        // SOLUCIÓN DEFINITIVA: Texto estático sin monto. 
+        // Evitamos que el bug visual de Telegram confunda al cliente.
+        const buttonText = "✅ ENVIAR PEDIDO";
 
         if (tg && tg.platform !== 'unknown') {
-          // El 'setTimeout' de 50ms obliga a Telegram a actualizar la UI sin lag
-          setTimeout(() => {
-            tg.MainButton.setText(buttonText);
-            if (!tg.MainButton.isVisible) {
-              tg.MainButton.show();
-            }
-          }, 50);
+          tg.MainButton.setText(buttonText);
+          
+          if (!tg.MainButton.isVisible) {
+            tg.MainButton.show();
+          }
         } else {
           // Fallback para navegador web sin Telegram
           const fallbackFooter = document.getElementById('fallback-footer');
