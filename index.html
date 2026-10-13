@@ -500,12 +500,13 @@
         const buttonText = "CONFIRMAR PEDIDO ($" + totalAmount.toFixed(2) + ")";
 
         if (tg && tg.platform !== 'unknown') {
-          // MÉTODO DIRECTO Y SÍNCRONO PARA MÓVILES (Evita el lag)
-          tg.MainButton.setText(buttonText);
-          
-          if (!tg.MainButton.isVisible) {
-            tg.MainButton.show();
-          }
+          // El 'setTimeout' de 50ms obliga a Telegram a actualizar la UI sin lag
+          setTimeout(() => {
+            tg.MainButton.setText(buttonText);
+            if (!tg.MainButton.isVisible) {
+              tg.MainButton.show();
+            }
+          }, 50);
         } else {
           // Fallback para navegador web sin Telegram
           const fallbackFooter = document.getElementById('fallback-footer');
@@ -526,7 +527,6 @@
         }
       }
     }
-    
     /* ==========================================
        5. FINALIZACIÓN Y ENVÍO DEL PEDIDO (JSON)
        ========================================== */
