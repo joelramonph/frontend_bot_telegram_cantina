@@ -331,16 +331,107 @@
        1. CONFIGURACIÓN Y ESTADO DE LA APLICACIÓN
        ========================================== */
 
-    // Catálogo de productos de prueba para la cantina
+    // Catálogo de productos de la cantina
     const PRODUCTS = [
-      { id: 'emp_carne', name: 'Empanada de Carne', category: 'comidas', price: 1.50, emoji: '🥟', desc: 'Carne mechada crujiente' },
-      { id: 'emp_queso', name: 'Empanada de Queso', category: 'comidas', price: 1.25, emoji: '🧀', desc: 'Queso blanco derretido' },
-      { id: 'arepa_pabellon', name: 'Arepa Pabellón', category: 'comidas', price: 2.50, emoji: '🫓', desc: 'Carne, caraotas, tajada y queso' },
-      { id: 'tequenios', name: 'Ración de Tequeños (4ud)', category: 'snacks', price: 2.00, emoji: '🥖', desc: 'Acompañados de salsa tártara' },
-      { id: 'jugo_durazno', name: 'Jugo Natural de Durazno', category: 'bebidas', price: 1.00, emoji: '🧃', desc: 'Botella de 350ml' },
-      { id: 'refresco', name: 'Refresco en Lata', category: 'bebidas', price: 1.25, emoji: '🥤', desc: 'Sabores surtidos 355ml' },
-      { id: 'agua', name: 'Agua Mineral', category: 'bebidas', price: 0.75, emoji: '💧', desc: 'Botella 500ml' },
-      { id: 'galleta', name: 'Galleta de Chocolate', category: 'snacks', price: 0.80, emoji: '🍪', desc: 'Chocolatosa recienc horneada' }
+      { 
+        id: "PROD-001", 
+        nombre: "Empanada de Carne Mechada", 
+        descripcion: "Empanada frita rellena de carne mechada sazonada", 
+        precio: 1.80, 
+        disponible: true,
+        category: "comidas",
+        emoji: "🥟"
+      },
+      { 
+        id: "PROD-002", 
+        nombre: "Empanada Carne Molida", 
+        descripcion: "Empanada frita tradicional rellena de carne molida", 
+        precio: 1.50, 
+        disponible: true,
+        category: "comidas",
+        emoji: "🥟"
+      },
+      { 
+        id: "PROD-003", 
+        nombre: "Empanada de Pollo", 
+        descripcion: "Empanada frita rellena de pollo desmechado y sazonado", 
+        precio: 1.00, 
+        disponible: true,
+        category: "comidas",
+        emoji: "🥟"
+      },
+      { 
+        id: "PROD-004", 
+        nombre: "Pastelitos Especial", 
+        descripcion: "Pastelito crujiente con relleno especial mixto", 
+        precio: 1.00, 
+        disponible: true,
+        category: "comidas",
+        emoji: "🥐"
+      },
+      { 
+        id: "PROD-005", 
+        nombre: "Pastelito de Pollo", 
+        descripcion: "Pastelito crujiente relleno de guiso de pollo", 
+        precio: 1.00, 
+        disponible: true,
+        category: "comidas",
+        emoji: "🥐"
+      },
+      { 
+        id: "PROD-006", 
+        nombre: "Tequeños", 
+        descripcion: "Ración de deliciosos tequeños de queso tradicionales", 
+        precio: 1.00, 
+        disponible: true,
+        category: "snacks",
+        emoji: "🥖"
+      },
+      { 
+        id: "PROD-007", 
+        nombre: "Tostones", 
+        descripcion: "Porción de tostones crujientes de plátano verde", 
+        precio: 1.50, 
+        disponible: true,
+        category: "snacks",
+        emoji: "🍌"
+      },
+      { 
+        id: "PROD-008", 
+        nombre: "Café Pequeño", 
+        descripcion: "Taza pequeña de café recién preparado", 
+        precio: 0.80, 
+        disponible: true,
+        category: "bebidas",
+        emoji: "☕"
+      },
+      { 
+        id: "PROD-009", 
+        nombre: "Café Grande", 
+        descripcion: "Taza grande de café recién preparado", 
+        precio: 1.00, 
+        disponible: true,
+        category: "bebidas",
+        emoji: "☕"
+      },
+      { 
+        id: "PROD-010", 
+        nombre: "Jugos de Parchita", 
+        descripcion: "Vaso de jugo natural y refrescante de parchita", 
+        precio: 1.00, 
+        disponible: true,
+        category: "bebidas",
+        emoji: "🧃"
+      },
+      { 
+        id: "PROD-011", 
+        nombre: "Jugo de Fresa", 
+        descripcion: "Vaso de jugo natural y fresco de fresa", 
+        precio: 1.00, 
+        disponible: true,
+        category: "bebidas",
+        emoji: "🍓"
+      }
     ];
 
     // Estado local del carrito: { [productId]: cantidad }
@@ -398,12 +489,18 @@
       const container = document.getElementById('products-container');
       container.innerHTML = '';
 
+      const availableProducts = PRODUCTS.filter(p => p.disponible !== false);
+
       const filteredProducts = categoryFilter === 'all' 
-        ? PRODUCTS 
-        : PRODUCTS.filter(p => p.category === categoryFilter);
+        ? availableProducts 
+        : availableProducts.filter(p => p.category === categoryFilter);
 
       filteredProducts.forEach(product => {
         const qty = cart[product.id] || 0;
+        const name = product.nombre || product.name;
+        const desc = product.descripcion || product.desc || '';
+        const price = product.precio !== undefined ? product.precio : product.price;
+        const emoji = product.emoji || '🍽️';
 
         const card = document.createElement('div');
         card.className = 'product-card';
@@ -411,11 +508,11 @@
 
         card.innerHTML = `
           <div class="product-info">
-            <div class="product-emoji">${product.emoji}</div>
+            <div class="product-emoji">${emoji}</div>
             <div class="product-details">
-              <span class="product-name">${product.name}</span>
-              <span class="product-description">${product.desc}</span>
-              <span class="product-price">${CURRENCY_SYMBOL}${product.price.toFixed(2)}</span>
+              <span class="product-name">${name}</span>
+              <span class="product-description">${desc}</span>
+              <span class="product-price">${CURRENCY_SYMBOL}${price.toFixed(2)}</span>
             </div>
           </div>
           <div class="stepper">
@@ -484,7 +581,8 @@
       for (const [id, qty] of Object.entries(cart)) {
         const product = PRODUCTS.find(p => p.id === id);
         if (product) {
-          totalAmount += product.price * qty;
+          const price = product.precio !== undefined ? product.precio : product.price;
+          totalAmount += price * qty;
           totalItems += qty;
         }
       }
@@ -545,12 +643,14 @@
       // Construcción del vector de items seleccionados
       const orderItems = Object.entries(cart).map(([id, quantity]) => {
         const product = PRODUCTS.find(p => p.id === id);
+        const name = product.nombre || product.name;
+        const price = product.precio !== undefined ? product.precio : product.price;
         return {
           id: product.id,
-          name: product.name,
-          unitPrice: product.price,
+          name: name,
+          unitPrice: price,
           quantity: quantity,
-          subtotal: Number((product.price * quantity).toFixed(2))
+          subtotal: Number((price * quantity).toFixed(2))
         };
       });
 
